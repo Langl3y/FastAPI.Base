@@ -1,0 +1,11 @@
+pytz==2021.1
+fastapi[all]~=0.112.1
+uvicorn[standard]
+sqlalchemy~=2.0.32
+pydantic~=2.8.2
+starlette
+SQLAlchemy
+requests~=2.31.0
+urllib3~=2.2.2
+python-dotenv~=1.0.1
+psycopg2==2.9.10
