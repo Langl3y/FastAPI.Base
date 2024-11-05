@@ -3,7 +3,7 @@
     <p style="text-align: center;">
 </p>
 
-# FastAPI - Task Management (Customore Case Study #1)
+# FastAPI DEMO Codebase
 
 <span style="color:red;font-weight:700;font-size:50px">
     Tested on Windows
