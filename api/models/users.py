@@ -9,7 +9,7 @@ class User(BaseModel):
 
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     username = Column(String(50), unique=True)
-    password = Column(String(50))  # simple password implementation - just for this case study
+    password = Column(String(100))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     is_deleted = Column(Boolean, default=False)
