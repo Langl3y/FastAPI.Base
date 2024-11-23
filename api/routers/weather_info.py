@@ -14,29 +14,9 @@ weather_info_router = APIRouter(prefix="/weather_info", tags=["weather_info"])
 @weather_info_router.post('/get_weather_info', response_model=dict)
 async def get_weather_info_router(data_body: Optional[GetWeatherInfoSerializer] = None, db: Session = Depends(get_db)):
     try:
-        weather_service = WeatherService(db)
-
-        result = weather_service.get_weather_info(
-            id=data_body.id if data_body else None,
-            city=data_body.city if data_body else None,
-            sunrise=data_body.sunrise if data_body else None,
-            sunset=data_body.sunset if data_body else None,
-            temp=data_body.temp if data_body else None,
-            feels_like=data_body.feel_l if data_body else None,
-            pressure=data_body.pressure if data_body else None,
-            humidity=data_body.humidity if data_body else None,
-            dew_point=data_body.dew_point if data_body else None,
-            uvi=data_body.uvi if data_body else None,
-            clouds=data_body.clouds if data_body else None,
-            visibility=data_body.visibility if data_body else None,
-            wind_speed=data_body.wind_speed if data_body else None,
-            wind_deg=data_body.wind_deg if data_body else None,
-            wind_gust=data_body.wind_gust if data_body else None,
-            weather=data_body.weather if data_body else None,
-            pop=data_body.pop if data_body else None,
-        )
-
+        result = WeatherService(db).get_weather_info(data_body)
         weather_responses = [WeatherResponseSerializer.from_orm(weather) for weather in result] if result else []
+
         return {
             'response': APIResponseCode.SUCCESS,
             'result': weather_responses
@@ -51,10 +31,9 @@ async def get_weather_info_router(data_body: Optional[GetWeatherInfoSerializer] 
 @weather_info_router.post('/create_weather_info', response_model=dict)
 async def create_weather_info_router(data_body: CreateWeatherInfoSerializer, db: Session = Depends(get_db)):
     try:
-        weather_service = WeatherService(db)
-        result = weather_service.create_weather_info(data_body)
-
+        result = WeatherService(db).create_weather_info(data_body)
         weather_response = WeatherResponseSerializer.from_orm(result).dict() if result else {}
+
         return {
             'response': APIResponseCode.SUCCESS,
             'result': weather_response
