@@ -5,7 +5,10 @@ from typing import Optional
 
 class GetWeatherInfoSerializer(BaseModel):
     id: Optional[int] = None
-    city: Optional[int] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    timestamp: Optional[int] = None
+    timezone: Optional[str] = None
     sunrise: Optional[int] = None
     sunset: Optional[int] = None
     temp: Optional[float] = None
@@ -23,20 +26,20 @@ class GetWeatherInfoSerializer(BaseModel):
     pop: Optional[float] = None
 
 
-class CreateWeatherInfoSerializer(GetWeatherInfoSerializer):
-    pass
+class CreateWeatherInfoSerializer(BaseModel):
+    lat: float
+    lon: float
 
 
 class UpdateWeatherInfoSerializer(GetWeatherInfoSerializer):
-    pass
+    id: int
+
 
 class DeleteWeatherInfoSerializer(BaseModel):
-    id: Optional[int] = None
+    id: int
 
 
 class WeatherResponseSerializer(GetWeatherInfoSerializer):
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
 
     class Config:
         from_attributes = True
