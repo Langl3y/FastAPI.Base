@@ -1,3 +1,7 @@
+import requests
+
+from api.serializers import CreateWeatherInfoSerializer
+from be.env import api_key
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from api.models import WeatherInfo
@@ -7,61 +11,64 @@ class WeatherService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_weather_info(self, id=None, city=None, sunrise=None, sunset=None
-                         , temp=None, feels_like=None, pressure=None, humidity=None
-                         , dew_point=None, uvi=None, clouds=None, visibility=None
-                         , wind_speed=None, wind_deg=None, wind_gust=None, weather=None
-                         , pop=None):
+    def get_weather_info(self, data_body):
         query = self.db.query(WeatherInfo)
         filters = []
-
-        if id is not None:
-            filters.append(WeatherInfo.id == id)
-        if city is not None:
-            filters.append(WeatherInfo.city == city)
-        if sunrise is not None:
-            filters.append(WeatherInfo.sunrise == sunrise)
-        if sunset is not None:
-            filters.append(WeatherInfo.sunset == sunset)
-        if temp is not None:
-            filters.append(WeatherInfo.temp == temp)
-        if feels_like is not None:
-            filters.append(WeatherInfo.feels_like == feels_like)
-        if pressure is not None:
-            filters.append(WeatherInfo.pressure == pressure)
-        if humidity is not None:
-            filters.append(WeatherInfo.humidity == humidity)
-        if dew_point is not None:
-            filters.append(WeatherInfo.dew_point == dew_point)
-        if uvi is not None:
-            filters.append(WeatherInfo.uvi == uvi)
-        if clouds is not None:
-            filters.append(WeatherInfo.clouds == clouds)
-        if visibility is not None:
-            filters.append(WeatherInfo.visibility == visibility)
-        if wind_speed is not None:
-            filters.append(WeatherInfo.wind_speed == wind_speed)
-        if wind_deg is not None:
-            filters.append(WeatherInfo.wind_deg == wind_deg)
-        if wind_gust is not None:
-            filters.append(WeatherInfo.wind_gust == wind_gust)
-        if weather is not None:
-            filters.append(WeatherInfo.weather == weather)
-        if pop is not None:
-            filters.append(WeatherInfo.pop == pop)
+        data_body = dict(data_body)
+        for k, _ in data_body.items():
+            if data_body.get(k) is not None:
+                filters.append(getattr(WeatherInfo, k) == data_body.get(k))
 
         if filters:
             query = query.filter(and_(*filters))
-
         return query.all()
 
     def create_weather_info(self, data_body):
-        new_weather_info = WeatherInfo(**data_body.dict())
-        self.db.add(new_weather_info)
-        self.db.commit()
-        self.db.refresh(new_weather_info)
+        lat = data_body.__dict__.get('lat')
+        lon = data_body.__dict__.get('lon')
+        query = self.db.query(WeatherInfo)
+        weather_info = query.filter(WeatherInfo.lat == lat, WeatherInfo.lon == lon).first()
+        if weather_info:
+            return weather_info
+        open_weather_api = 'https://api.openweathermap.org/data/3.0/onecall'
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'appid': api_key
+        }
 
-        return new_weather_info
+        result = requests.get(open_weather_api, params=params)
+        print(result.text)
+        if data := result.json():
+            excluded_keys = {'hourly', 'daily', 'alerts', 'timezone_offset'}
+            weather_data = {}
+            current_data = data.get('current', {})
+
+            for k, v in data.items():
+                if k in excluded_keys:
+                    continue
+                if k == 'current':
+                    continue
+                weather_data[k] = v
+
+            for info, value in current_data.items():
+                if info == 'weather':
+                    weather_data['weather'] = str(value) if value is not None else "[]"
+                elif info == 'rain':
+                    weather_data['rain'] = str(value) if value is not None else "[]"
+                elif info in ['sunrise', 'sunset']:
+                    weather_data[info] = int(value) if value is not None else 0
+                elif info == 'dt':
+                    weather_data['timestamp'] = int(value) if value is not None else 0
+                else:
+                    weather_data[info] = value if value is not None else 0
+
+            new_weather_info = WeatherInfo(**weather_data)
+            self.db.add(new_weather_info)
+            self.db.commit()
+            self.db.refresh(new_weather_info)
+
+            return new_weather_info
 
     def update_weather_info(self, data_body):
         weather_info = self.db.query(WeatherInfo).filter(WeatherInfo.id == data_body).first()
