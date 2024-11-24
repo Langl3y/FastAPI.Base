@@ -13,6 +13,7 @@ allowed_hosts = os.getenv('ALLOWED_HOSTS')
 api_key = os.getenv('API_KEY')
 secret = os.getenv('SECRET')
 algorithm = os.getenv('ALGORITHM')
+token_expires_in = int(os.getenv('TOKEN_EXPIRES_IN_MINUTES'))
 
 db_manager = os.getenv('DB_MANAGER')
 db_user = os.getenv('DB_USER')
