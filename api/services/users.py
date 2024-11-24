@@ -1,3 +1,5 @@
+import bcrypt
+
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from api.models import User
@@ -6,6 +8,14 @@ from api.models import User
 class UserService:
     def __init__(self, db: Session):
         self.db = db
+
+    def authenticate_user(self, username: str, password: str):
+        query = self.db.query(User).filter(User.username == username)
+        result = bcrypt.checkpw(password.encode(), query.first().password.encode())
+
+        if result:
+            return True
+        return False
 
     def get_users(self, id=None, username=None, created_at=None, updated_at=None, is_deleted=None):
         query = self.db.query(User)
