@@ -11,17 +11,30 @@ class WeatherService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_weather_info(self, data_body):
+    def get_weather_info(self, page: int, page_size: int, data_body):
         query = self.db.query(WeatherInfo)
         filters = []
+
         data_body = dict(data_body)
+        data_body.pop('access_token')
+
         for k, _ in data_body.items():
             if data_body.get(k) is not None:
                 filters.append(getattr(WeatherInfo, k) == data_body.get(k))
 
         if filters:
             query = query.filter(and_(*filters))
-        return query.all()
+
+        total = query.count()
+
+        # Map page number to offset + 1, since offset always starts at 0 and page number starts at 1
+        offset = (page - 1) * page_size if total > 0 else 0
+
+        # Paginate all tasks into chunks of *page_size* objects
+        users = query.offset(offset).limit(page_size).all()
+        total_pages = (total + page_size - 1) // page_size
+
+        return query.all(), total, page, page_size, total_pages
 
     def create_weather_info(self, data_body):
         lat = data_body.__dict__.get('lat')
@@ -34,13 +47,14 @@ class WeatherService:
         params = {
             'lat': lat,
             'lon': lon,
-            'appid': api_key
+            'appid': api_key,
+            'exclude': 'current,minutely,hourly,alerts'
         }
 
         result = requests.get(open_weather_api, params=params)
         print(result.text)
         if data := result.json():
-            excluded_keys = {'hourly', 'daily', 'alerts', 'timezone_offset'}
+            excluded_keys = {'hourly', 'daily', 'minutely', 'alerts', 'timezone_offset'}
             weather_data = {}
             current_data = data.get('current', {})
 
