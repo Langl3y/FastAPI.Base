@@ -21,7 +21,7 @@ app.include_router(api_router)
 app.include_router(login_router)
 
 
-@app.get("/")
+@app.get("/version")
 def main():
     return {"task_management": {
         "version": "1.0.0",
