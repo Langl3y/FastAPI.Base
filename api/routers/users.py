@@ -25,8 +25,10 @@ async def generate_access_token(credentials: HTTPBasicCredentials = Depends(basi
 
         if result:
             access_token_expires = timedelta(minutes=token_expires_in)
+            role = user_service.get_user_role(username)
+
             access_token = create_access_token(
-                data={"sub": username}, expires_delta=access_token_expires
+                data={"sub": username, "role": role}, expires_delta=access_token_expires
             )
             return {
                 "access_token": access_token,
