@@ -11,9 +11,11 @@ app_port = os.getenv('APP_PORT')
 allowed_hosts = os.getenv('ALLOWED_HOSTS')
 
 api_key = os.getenv('API_KEY')
-secret = os.getenv('SECRET')
+secret = os.getenv('APP_SECRET')
 algorithm = os.getenv('ALGORITHM')
 token_expires_in = int(os.getenv('TOKEN_EXPIRES_IN_MINUTES'))
+
+admin_password = os.getenv('ADMIN_PASSWORD')
 
 db_manager = os.getenv('DB_MANAGER')
 db_user = os.getenv('DB_USER')
