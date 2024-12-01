@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from api.routers import tasks_router, users_router, weather_info_router
+from api.routers import tasks_router, users_router, weather_info_router, login_router
 from be.env import allowed_hosts
 
 app = FastAPI()
@@ -18,6 +18,7 @@ api_router.include_router(tasks_router)
 api_router.include_router(users_router)
 api_router.include_router(weather_info_router)
 app.include_router(api_router)
+app.include_router(login_router)
 
 
 @app.get("/")
