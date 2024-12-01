@@ -9,6 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from be.env import *
 from api.models.base_model import Base
 from api.models import User
+from .responses import APIResponseCode
+
 
 db_url = f'{db_manager}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 engine = create_engine(db_url)
@@ -58,15 +60,17 @@ def hash_password(password: str) -> str:
 
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
-    return encoded_jwt
+    try:
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
+        return encoded_jwt
+    except Exception as e:
+        raise Exception(f"{APIResponseCode.SERVER_ERROR['message']}: {str(e)}")
 
 
 def decode_jwt(access_token: str):
@@ -75,3 +79,29 @@ def decode_jwt(access_token: str):
         return payload
     except jwt.InvalidTokenError as e:
         return e
+
+
+async def validate_token(access_token: str) -> dict:
+    try:
+        decoded = jwt.decode(
+            access_token,
+            key=secret,
+            algorithms=[algorithm]
+        )
+        return {"valid": True, "data": decoded}
+    except jwt.ExpiredSignatureError:
+        return {
+            "valid": False, 
+            "error": APIResponseCode.TOKEN_EXPIRED["message"]
+        }
+    except jwt.InvalidSignatureError:
+        return {
+            "valid": False, 
+            "error": APIResponseCode.INVALID_TOKEN["message"]
+        }
+    except Exception as e:
+        print(f"Token validation error: {str(e)}")  # Debug print
+        return {
+            "valid": False, 
+            "error": f"{APIResponseCode.SERVER_ERROR['message']}: {str(e)}"
+        }
