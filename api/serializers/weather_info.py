@@ -4,6 +4,34 @@ from typing import Optional
 
 
 class GetWeatherInfoSerializer(BaseModel):
+    access_token: str
+    id: Optional[int] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    timestamp: Optional[int] = None
+    timezone: Optional[str] = None
+
+    page: Optional[int] = None
+    page_size: Optional[int] = None
+
+
+class CreateWeatherInfoSerializer(BaseModel):
+    access_token: str
+    lat: float
+    lon: float
+
+
+class UpdateWeatherInfoSerializer(GetWeatherInfoSerializer):
+    access_token: str
+    id: int
+
+
+class DeleteWeatherInfoSerializer(BaseModel):
+    access_token: str
+    id: int
+
+
+class WeatherResponseSerializer(BaseModel):
     id: Optional[int] = None
     lat: Optional[float] = None
     lon: Optional[float] = None
@@ -24,22 +52,6 @@ class GetWeatherInfoSerializer(BaseModel):
     wind_gust: Optional[float] = None
     weather: Optional[str] = None
     pop: Optional[float] = None
-
-
-class CreateWeatherInfoSerializer(BaseModel):
-    lat: float
-    lon: float
-
-
-class UpdateWeatherInfoSerializer(GetWeatherInfoSerializer):
-    id: int
-
-
-class DeleteWeatherInfoSerializer(BaseModel):
-    id: int
-
-
-class WeatherResponseSerializer(GetWeatherInfoSerializer):
 
     class Config:
         from_attributes = True
