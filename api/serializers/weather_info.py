@@ -1,6 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
+from api.common.responses import APIResponseCode
 
 
 class GetWeatherInfoSerializer(BaseModel):
@@ -10,9 +11,20 @@ class GetWeatherInfoSerializer(BaseModel):
     lon: Optional[float] = None
     timestamp: Optional[int] = None
     timezone: Optional[str] = None
+    page: Optional[int] = 1
+    page_size: Optional[int] = 10
 
-    page: Optional[int] = None
-    page_size: Optional[int] = None
+    @validator('page')
+    def validate_page(cls, v):
+        if v is not None and v < 1:
+            raise ValueError(f"{APIResponseCode.VALIDATION_ERROR['message']}: Page must be greater than 0")
+        return v
+
+    @validator('page_size')
+    def validate_page_size(cls, v):
+        if v is not None and v < 1:
+            raise ValueError(f"{APIResponseCode.VALIDATION_ERROR['message']}: Page size must be greater than 0")
+        return v
 
 
 class CreateWeatherInfoSerializer(BaseModel):
@@ -20,10 +32,38 @@ class CreateWeatherInfoSerializer(BaseModel):
     lat: float
     lon: float
 
+    @validator('lat')
+    def validate_latitude(cls, v):
+        if not -90 <= v <= 90:
+            raise ValueError(f"{APIResponseCode.INVALID_COORDINATES['message']}: Latitude must be between -90 and 90")
+        return v
 
-class UpdateWeatherInfoSerializer(GetWeatherInfoSerializer):
+    @validator('lon')
+    def validate_longitude(cls, v):
+        if not -180 <= v <= 180:
+            raise ValueError(f"{APIResponseCode.INVALID_COORDINATES['message']}: Longitude must be between -180 and 180")
+        return v
+
+
+class UpdateWeatherInfoSerializer(BaseModel):
     access_token: str
     id: int
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    timestamp: Optional[int] = None
+    timezone: Optional[str] = None
+
+    @validator('lat')
+    def validate_latitude(cls, v):
+        if v is not None and not -90 <= v <= 90:
+            raise ValueError(f"{APIResponseCode.INVALID_COORDINATES['message']}: Latitude must be between -90 and 90")
+        return v
+
+    @validator('lon')
+    def validate_longitude(cls, v):
+        if v is not None and not -180 <= v <= 180:
+            raise ValueError(f"{APIResponseCode.INVALID_COORDINATES['message']}: Longitude must be between -180 and 180")
+        return v
 
 
 class DeleteWeatherInfoSerializer(BaseModel):
