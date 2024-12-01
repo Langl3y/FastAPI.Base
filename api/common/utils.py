@@ -7,6 +7,7 @@ from typing import Union
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from be.env import *
+from be.config import create_admin
 from api.models.base_model import Base
 
 db_url = f'{db_manager}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
@@ -26,6 +27,7 @@ def get_db():
 
 
 def create_database():
+    create_admin()
     """
     Create all tables from defined models in api.models
     """
