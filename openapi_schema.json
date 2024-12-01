@@ -395,10 +395,225 @@
                 }
             }
         },
-        "/": {
+        "/api/weather_info/get_weather_info": {
+            "post": {
+                "tags": [
+                    "weather_info"
+                ],
+                "summary": "Get Weather Info Router",
+                "operationId": "get_weather_info_router_api_weather_info_get_weather_info_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/GetWeatherInfoSerializer"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Data Body"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "title": "Response Get Weather Info Router Api Weather Info Get Weather Info Post"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/weather_info/create_weather_info": {
+            "post": {
+                "tags": [
+                    "weather_info"
+                ],
+                "summary": "Create Weather Info Router",
+                "operationId": "create_weather_info_router_api_weather_info_create_weather_info_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateWeatherInfoSerializer"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "title": "Response Create Weather Info Router Api Weather Info Create Weather Info Post"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/weather_info/update_weather_info": {
+            "post": {
+                "tags": [
+                    "weather_info"
+                ],
+                "summary": "Update Weather Info Router",
+                "operationId": "update_weather_info_router_api_weather_info_update_weather_info_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/UpdateWeatherInfoSerializer"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Data Body"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "title": "Response Update Weather Info Router Api Weather Info Update Weather Info Post"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/weather_info/delete_weather_info": {
+            "post": {
+                "tags": [
+                    "weather_info"
+                ],
+                "summary": "Delete User Router",
+                "operationId": "delete_user_router_api_weather_info_delete_weather_info_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/DeleteWeatherInfoSerializer"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Data Body"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "title": "Response Delete User Router Api Weather Info Delete Weather Info Post"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "summary": "Generate Access Token",
+                "operationId": "generate_access_token_login_post",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "title": "Response Generate Access Token Login Post"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBasic": []
+                    }
+                ]
+            }
+        },
+        "/version": {
             "get": {
                 "summary": "Main",
-                "operationId": "main__get",
+                "operationId": "main_version_get",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -498,6 +713,29 @@
                 ],
                 "title": "CreateUserSerializer"
             },
+            "CreateWeatherInfoSerializer": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token"
+                    },
+                    "lat": {
+                        "type": "number",
+                        "title": "Lat"
+                    },
+                    "lon": {
+                        "type": "number",
+                        "title": "Lon"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "lat",
+                    "lon"
+                ],
+                "title": "CreateWeatherInfoSerializer"
+            },
             "DeleteTaskSerializer": {
                 "properties": {
                     "id": {
@@ -523,6 +761,24 @@
                     "id"
                 ],
                 "title": "DeleteUserSerializer"
+            },
+            "DeleteWeatherInfoSerializer": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "id"
+                ],
+                "title": "DeleteWeatherInfoSerializer"
             },
             "GetTasksSerializer": {
                 "properties": {
@@ -677,6 +933,17 @@
                         ],
                         "title": "Username"
                     },
+                    "role": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Role"
+                    },
                     "created_at": {
                         "anyOf": [
                             {
@@ -715,6 +982,96 @@
                 },
                 "type": "object",
                 "title": "GetUserSerializer"
+            },
+            "GetWeatherInfoSerializer": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token"
+                    },
+                    "id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Id"
+                    },
+                    "lat": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lat"
+                    },
+                    "lon": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lon"
+                    },
+                    "timestamp": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timestamp"
+                    },
+                    "timezone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timezone"
+                    },
+                    "page": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Page"
+                    },
+                    "page_size": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Page Size"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token"
+                ],
+                "title": "GetWeatherInfoSerializer"
             },
             "HTTPValidationError": {
                 "properties": {
@@ -830,6 +1187,90 @@
                 ],
                 "title": "UpdateUserSerializer"
             },
+            "UpdateWeatherInfoSerializer": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "lat": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lat"
+                    },
+                    "lon": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Lon"
+                    },
+                    "timestamp": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timestamp"
+                    },
+                    "timezone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timezone"
+                    },
+                    "page": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Page"
+                    },
+                    "page_size": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Page Size"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "id"
+                ],
+                "title": "UpdateWeatherInfoSerializer"
+            },
             "ValidationError": {
                 "properties": {
                     "loc": {
@@ -862,6 +1303,12 @@
                     "type"
                 ],
                 "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBasic": {
+                "type": "http",
+                "scheme": "basic"
             }
         }
     }
