@@ -17,7 +17,11 @@ class UserService:
             return True
         return False
 
-    def get_users(self, id=None, username=None, created_at=None, updated_at=None, is_deleted=None):
+    def get_user_role(self, username: str):
+        query = self.db.query(User).filter(User.username == username).first()
+        return query.__dict__.get('role')
+
+    def get_users(self, id=None, username=None, role=None, created_at=None, updated_at=None, is_deleted=None):
         query = self.db.query(User)
         filters = []
 
@@ -26,6 +30,8 @@ class UserService:
             filters.append(User.id == id)
         if username is not None:
             filters.append(User.username == username)
+        if role is not None:
+            filters.append(User.role == role)
         if created_at is not None:
             filters.append(User.created_at == created_at)
         if updated_at is not None:
