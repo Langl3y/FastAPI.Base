@@ -7,8 +7,8 @@ from typing import Union
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from be.env import *
-from be.config import create_admin
 from api.models.base_model import Base
+from api.models import User
 
 db_url = f'{db_manager}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 engine = create_engine(db_url)
@@ -27,11 +27,27 @@ def get_db():
 
 
 def create_database():
-    create_admin()
+    db = SessionLocal()
+    create_admin(db)
     """
     Create all tables from defined models in api.models
     """
     Base.metadata.create_all(bind=engine)
+
+
+def create_admin(db: SessionLocal):
+    admin_user = db.query(User).filter(User.username == "admin").first()
+    if not admin_user:
+        admin = User(
+            username="admin",
+            password=hash_password(admin_password),
+            role="admin"
+        )
+
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+        db.close()
 
 
 def hash_password(password: str) -> str:
