@@ -39,13 +39,14 @@ def hash_password(password: str) -> str:
     return hashed_password
 
 
-def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None) -> str:
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
+
     encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
     return encoded_jwt
 
