@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from api.serializers import GetTasksSerializer, CreateTaskSerializer, UpdateTaskSerializer, DeleteTaskSerializer, TaskResponseSerializer
 from api.services import TaskService
 from api.common.responses import APIResponseCode
-from api.common.utils import get_db
+from api.common.utils import get_db, validate_token
 
 tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -13,31 +13,36 @@ tasks_router = APIRouter(prefix="/tasks", tags=["tasks"])
 @tasks_router.post('/get_tasks', response_model=dict)
 async def get_tasks_router(data_body: Optional[GetTasksSerializer] = None, db: Session = Depends(get_db)):
     try:
-        task_service = TaskService(db)
+        if not data_body or not data_body.access_token:
+            return {
+                'response': APIResponseCode.MISSING_TOKEN,
+                'error': APIResponseCode.MISSING_TOKEN["message"]
+            }
 
-        tasks, total_tasks, page, page_size, total_pages = task_service.get_tasks(
-            id=data_body.id if data_body else None,
-            user_id=data_body.user_id if data_body else None,
-            title=data_body.title if data_body else None,
-            description=data_body.description if data_body else None,
-            due_date=data_body.due_date if data_body else None,
-            status=data_body.status if data_body else None,
-            page=data_body.page if data_body and data_body.page else 1,
-            page_size=data_body.page_size if data_body and data_body.page_size else 10,
-            created_at=data_body.created_at if data_body else None,
-            updated_at=data_body.updated_at if data_body else None,
-            is_deleted=data_body.is_deleted if data_body else None
+        token_result = await validate_token(data_body.access_token)
+        if not token_result["valid"]:
+            return {
+                'response': APIResponseCode.INVALID_TOKEN,
+                'error': token_result["error"]
+            }
+
+        page = data_body.page or 1
+        page_size = data_body.page_size or 10
+
+        task_service = TaskService(db)
+        result, total, page, page_size, total_pages = task_service.get_tasks(
+            page, page_size, data_body
         )
-        paginated_result = {
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages,
-            "total_tasks": total_tasks,
-            "tasks": [TaskResponseSerializer.from_orm(task).dict() for task in tasks] if tasks else []
-        }
+
         return {
             'response': APIResponseCode.SUCCESS,
-            'result': paginated_result
+            'result': {
+                'page': page,
+                'page_size': page_size,
+                'total_pages': total_pages,
+                'total_items': total,
+                'data': [TaskResponseSerializer.from_orm(item).dict() for item in result]
+            }
         }
     except Exception as e:
         return {
