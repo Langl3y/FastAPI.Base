@@ -6,6 +6,7 @@ from typing import Optional
 class GetUserSerializer(BaseModel):
     id: Optional[int] = None
     username: Optional[str] = None
+    role: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     is_deleted: Optional[bool] = None
@@ -29,6 +30,7 @@ class DeleteUserSerializer(BaseModel):
 class UserResponseSerializer(BaseModel):
     id: Optional[int]
     username: Optional[str]
+    role: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     is_deleted: Optional[bool]

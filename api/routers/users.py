@@ -16,23 +16,34 @@ basic_security = HTTPBasic()
 
 @login_router.post('/login', response_model=dict)
 async def generate_access_token(credentials: HTTPBasicCredentials = Depends(basic_security), db: Session = Depends(get_db)):
-    username = credentials.username
-    password = credentials.password
-
     try:
+        username = credentials.username
+        password = credentials.password
+
         user_service = UserService(db)
         result = user_service.authenticate_user(username, password)
 
-        if result:
-            access_token_expires = timedelta(minutes=token_expires_in)
-            access_token = create_access_token(
-                data={"sub": username}, expires_delta=access_token_expires
-            )
+        if not result:
             return {
+                'response': APIResponseCode.INVALID_CREDENTIALS,
+                'error': APIResponseCode.INVALID_CREDENTIALS["message"]
+            }
+
+        access_token_expires = timedelta(minutes=token_expires_in)
+        role = user_service.get_user_role(username)
+        access_token = create_access_token(
+            data={"sub": username, "role": role},
+            expires_delta=access_token_expires
+        )
+
+        return {
+            'response': APIResponseCode.SUCCESS,
+            'result': {
                 "access_token": access_token,
                 "token_type": "bearer",
                 "expires_in": token_expires_in,
             }
+        }
     except Exception as e:
         return {
             'response': APIResponseCode.SERVER_ERROR,

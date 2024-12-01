@@ -1,79 +1,82 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from api.models.tasks import Task
+from api.common.responses import APIResponseCode
 
 
 class TaskService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_tasks(self, page: int, page_size: int, id=None, user_id=None, title=None, description=None, due_date=None,
-                  status=None,
-                  created_at=None, updated_at=None, is_deleted=None):
-        query = self.db.query(Task)
-        filters = []
+    def get_tasks(self, page: int, page_size: int, data_body):
+        try:
+            query = self.db.query(Task).filter(Task.is_deleted == False)
+            filters = []
 
-        # Filter incoming data
-        if id is not None:
-            filters.append(Task.id == id)
-        if user_id is not None:
-            filters.append(Task.user_id == user_id)
-        if title is not None:
-            filters.append(Task.title == title)
-        if description is not None:
-            filters.append(Task.description == description)
-        if due_date is not None:
-            filters.append(Task.due_date == due_date)
-        if status is not None:
-            filters.append(Task.status == status)
-        if created_at is not None:
-            filters.append(Task.created_at == created_at)
-        if updated_at is not None:
-            filters.append(Task.updated_at == updated_at)
-        if is_deleted is not None:
-            filters.append(Task.is_deleted == is_deleted)
+            data_dict = data_body.dict(exclude={'access_token', 'page', 'page_size'})
+            for key, value in data_dict.items():
+                if value is not None:
+                    filters.append(getattr(Task, key) == value)
 
-        if filters:
-            query = query.filter(and_(*filters))
+            if filters:
+                query = query.filter(and_(*filters))
 
-        total_tasks = query.count()
+            total = query.count()
+            offset = (page - 1) * page_size if total > 0 else 0
+            results = query.offset(offset).limit(page_size).all()
+            total_pages = (total + page_size - 1) // page_size
 
-        # Map page number to offset + 1, since offset always starts at 0 and page number starts at 1
-        offset = (page - 1) * page_size if total_tasks > 0 else 0
-
-        # Paginate all tasks into chunks of *page_size* objects
-        tasks = query.offset(offset).limit(page_size).all()
-        total_pages = (total_tasks + page_size - 1) // page_size
-
-        return tasks, total_tasks, page, page_size, total_pages
+            return results, total, page, page_size, total_pages
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"{APIResponseCode.DATABASE_ERROR['message']}: {str(e)}")
 
     def create_task(self, data_body):
-        new_task = Task(**data_body.dict())
-        self.db.add(new_task)
-        self.db.commit()
-
-        return new_task
+        try:
+            task = Task(**data_body.dict(exclude={'access_token'}))
+            self.db.add(task)
+            self.db.commit()
+            self.db.refresh(task)
+            return task
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"{APIResponseCode.DATABASE_ERROR['message']}: {str(e)}")
 
     def update_task(self, data_body):
-        task_obj = self.db.query(Task).filter(Task.id == data_body.id).first()
+        try:
+            task = self.db.query(Task).filter(
+                Task.id == data_body.id,
+                Task.is_deleted == False
+            ).first()
+            
+            if task is None:
+                raise ValueError(f"{APIResponseCode.NOT_FOUND['message']}: Task with id {data_body.id}")
 
-        if task_obj is not None:
-            for key, value in data_body:
-                if value is not None and key != 'id':  # to exclude id from mutable fields
-                    setattr(task_obj, key, value)
+            update_data = data_body.dict(exclude={'access_token', 'id'})
+            for key, value in update_data.items():
+                if value is not None:
+                    setattr(task, key, value)
+                    
             self.db.commit()
-            self.db.refresh(task_obj)
-
-            return task_obj
-        return None
+            self.db.refresh(task)
+            return task
+        except Exception as e:
+            self.db.rollback()
+            raise e
 
     def delete_task(self, data_body):
-        task_obj = self.db.query(Task).filter(Task.id == data_body.id).first()
+        try:
+            task = self.db.query(Task).filter(
+                Task.id == data_body.id,
+                Task.is_deleted == False
+            ).first()
+            
+            if task is None:
+                raise ValueError(f"{APIResponseCode.NOT_FOUND['message']}: Task with id {data_body.id}")
 
-        if task_obj is not None:
-            setattr(task_obj, "is_deleted", True)
+            task.is_deleted = True
             self.db.commit()
-            self.db.refresh(task_obj)
-
             return True
-        return False
+        except Exception as e:
+            self.db.rollback()
+            raise e
